@@ -6,11 +6,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
 import javafx.stage.Stage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,17 +19,17 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 
 public class Controller {
 
     private ObservableList<String> phoneTypeList = FXCollections.observableArrayList();
-    private ObservableList<XmlConfigFile> defaultFileConfigList = FXCollections.observableArrayList();
+    //    private ObservableList<XmlConfigFile> defaultFileConfigList = FXCollections.observableArrayList();
     private ObservableList<XmlConfigFile> fileConfigList = FXCollections.observableArrayList();
+    private Map<String, XmlConfigFile> defaultConfigList = new TreeMap<>();
 
     private XmlConfigFile currentDefaultConfig;
     private XmlConfigFile currentSelectedConfig;
@@ -90,19 +89,26 @@ public class Controller {
     private CheckBox chkNat;
 
     @FXML
+    private CheckBox chkLang;
+
+    @FXML
     private CheckBox chkNewPhoneType;
 
     @FXML
-    private void initialize(){
+    private void initialize() {
         initDefaultConfigs();
         initExistedConfigs();
 
         cmbNewPhoneType.setDisable(true);
+
+        txtMac.textProperty().addListener((ov, oldValue, newValue) -> {
+            txtMac.setText(newValue.toUpperCase());
+        });
     }
 
-    private void initDefaultConfigs(){
+    private void initDefaultConfigs() {
 
-        try{
+        try {
             File folder = new File(XmlConfigFile.getPATH());
 
             FilenameFilter fileFilter = new FilenameFilter() {
@@ -115,31 +121,37 @@ public class Controller {
                     }
                 }
             };
-            for(File file : folder.listFiles(fileFilter)){
-                try{
-                    defaultFileConfigList.add(new XmlConfigFile(file));
-                }catch (Exception e){
-                    System.out.println(e.getStackTrace());
+            for (File file : folder.listFiles(fileFilter)) {
+                try {
+                    String[] parts = file.getName().split("_");
+                    String[] parts_2 = parts[1].split("\\.");
+                    XmlConfigFile xml = new XmlConfigFile(file);
+                    xml.setPhoneType(parts_2[0]);
+                    defaultConfigList.put(parts_2[0], xml);
+
+//                    defaultFileConfigList.add(new XmlConfigFile(file));
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
                 }
             }
             List<String> comboDefaultList = new ArrayList<String>();
-            for(XmlConfigFile xmlConf : defaultFileConfigList){
-                comboDefaultList.add(xmlConf.getPhoneType());
+            for (Map.Entry pair : defaultConfigList.entrySet()) {
+                comboDefaultList.add((String) pair.getKey());
             }
 
             cmbPhoneType.setItems(FXCollections.observableList(comboDefaultList));
             cmbNewPhoneType.setItems(FXCollections.observableList(comboDefaultList));
 
 
-        } catch (Exception e){
-            System.out.println(e.getStackTrace());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
     }
 
-    private void initExistedConfigs(){
+    private void initExistedConfigs() {
 
-        try{
+        try {
             File folder = new File(XmlConfigFile.getPATH());
 
             FilenameFilter fileFilter = new FilenameFilter() {
@@ -152,16 +164,17 @@ public class Controller {
                     }
                 }
             };
-            for(File file : folder.listFiles(fileFilter)){
-                try{
+            fileConfigList = FXCollections.observableArrayList();
+            for (File file : folder.listFiles(fileFilter)) {
+                try {
                     fileConfigList.add(new XmlConfigFile(file));
-                }catch (Exception e){
+                } catch (Exception e) {
                     System.out.println(e.getStackTrace());
                 }
             }
             List<String> comboExistedList = new ArrayList<String>();
-            for(XmlConfigFile xmlConf : fileConfigList){
-                comboExistedList.add(xmlConf.getUserID() + " : " + xmlConf.getDisplayName() + " : " + xmlConf.getMac());
+            for (XmlConfigFile xmlConf : fileConfigList) {
+                comboExistedList.add(xmlConf.getUserID() + " : " + xmlConf.getPhoneLabel() + " : " + xmlConf.getMac());
             }
 
             Collections.sort(comboExistedList);
@@ -169,67 +182,103 @@ public class Controller {
             cmbPhoneNumber.setItems(FXCollections.observableList(comboExistedList));
 
 
-        } catch (Exception e){
+        } catch (Exception e) {
 
         }
 
     }
 
-    public void closeAction(ActionEvent actionEvent){
+    public void closeAction(ActionEvent actionEvent) {
         Stage stage = (Stage) btnClose.getScene().getWindow();
         stage.close();
     }
 
-    public void updateAction(ActionEvent actionEvent){
+    public void updateAction(ActionEvent actionEvent) {
 
-        if(currentSelectedConfig != null){
-            if(chkNewPhoneType.isSelected()){
+        // First validation
+        // --------------------------
+        String strMac = this.txtMac.getText();
 
-            }else{
-                fileConfigList.remove(currentSelectedConfig);
+        if ("".equals(strMac) || !checkMacField(strMac)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+
+            alert.setTitle("Error");
+            alert.setHeaderText("Error Dialog");
+            alert.setContentText("MAC field is not correct ( " + strMac + " ). Check it again!");
+
+            alert.showAndWait();
+
+            return;
+        }
+
+        if (currentSelectedConfig != null) {
+            if (chkNewPhoneType.isSelected()) {
+
+            } else {
                 updateConfFile(currentSelectedConfig);
                 currentSelectedConfig.updateConfig(false);
-                fileConfigList.add(currentSelectedConfig);
-
-
+                initExistedConfigs();
+                clearTextFields();
             }
-        }else if(currentDefaultConfig != null){
+            currentSelectedConfig = null;
+
+        } else if (currentDefaultConfig != null) {
+
+            // Second validation
+            // ----------------------------
+            String fileName = "SEP" + strMac.toUpperCase() + ".cnf.xml";
+            File path = new File(XmlConfigFile.getPATH());
+            boolean isExists = false;
+            boolean isRewrite = false;
+            try {
+                for (File file : path.listFiles()) {
+                    if (fileName.equals(file.getName())) {
+
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+                        alert.setTitle("Attention!");
+                        alert.setHeaderText("Confirmation Dialog");
+                        alert.setContentText("There is another file with the same name: " + fileName + ". Do you want to rewrite this file?");
+
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.get() == ButtonType.OK) {
+                            updateConfFile(currentDefaultConfig);
+                            currentDefaultConfig.updateConfig(true);
+                            initExistedConfigs();
+                            clearTextFields();
+                            currentDefaultConfig = null;
+                        }
+
+                        return;
+                    }
+                }
+
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
 
             updateConfFile(currentDefaultConfig);
             currentDefaultConfig.updateConfig(true);
-            fileConfigList = FXCollections.observableArrayList();
             initExistedConfigs();
+            clearTextFields();
+            currentDefaultConfig = null;
 
-        }else{
+        } else {
 
         }
-        List<String> comboExistedList = new ArrayList<String>();
-        for(XmlConfigFile xmlConf : fileConfigList){
-            comboExistedList.add(xmlConf.getUserID() + " : " + xmlConf.getDisplayName() + " : " + xmlConf.getMac());
-        }
-        Collections.sort(comboExistedList);
 
-        cmbPhoneNumber.setItems(FXCollections.observableList(comboExistedList));
-
-        clearTextFields();
 
     }
 
     public void cmbPhoneTypeOnShowing(Event event) {
-        System.out.println("On Showing");
+
     }
 
     public void cmbPhoneTypeOnAction(ActionEvent actionEvent) {
 
-        String cmbPhoneTypeStr = (String)this.cmbPhoneType.getValue();
-        for(XmlConfigFile xmlConf : defaultFileConfigList){
-            if(cmbPhoneTypeStr.equals(xmlConf.getPhoneType())){
-                currentDefaultConfig = xmlConf;
-                currentSelectedConfig = null;
-
-                break;
-            }
-        }
+        String cmbPhoneTypeStr = (String) this.cmbPhoneType.getValue();
+        currentDefaultConfig = defaultConfigList.get(cmbPhoneTypeStr);
+        currentSelectedConfig = null;
 
         updateTextFields(currentDefaultConfig);
         cmbPhoneNumber.setPromptText("select existing config");
@@ -239,11 +288,11 @@ public class Controller {
 
     public void cmbPhoneNumberOnAction(ActionEvent actionEvent) {
 
-        String cmbPhoneNumberStr = (String)this.cmbPhoneNumber.getValue();
-        for(XmlConfigFile xmlConf : fileConfigList){
-            if(cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getDisplayName()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getMac())){
+        String cmbPhoneNumberStr = (String) this.cmbPhoneNumber.getValue();
+        for (XmlConfigFile xmlConf : fileConfigList) {
+            if (cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
+                    cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) &&
+                    cmbPhoneNumberStr.contains(xmlConf.getMac())) {
                 currentDefaultConfig = null;
                 currentSelectedConfig = xmlConf;
 
@@ -257,7 +306,7 @@ public class Controller {
         cmbPhoneNumber.setOpacity(1);
     }
 
-    private void updateTextFields(XmlConfigFile xmlConf){
+    private void updateTextFields(XmlConfigFile xmlConf) {
 
         txtMac.setText(xmlConf.getMac());
         txtCurrentPhoneType.setText(xmlConf.getPhoneType());
@@ -268,12 +317,13 @@ public class Controller {
         txtPhoneLabel.setText(xmlConf.getPhoneLabel());
         txtSipPort.setText(xmlConf.getSipPort());
         txtSipmPort.setText(xmlConf.getSipmPort());
-        txtDisplayName.setText(xmlConf.getDisplayName());
+        txtDisplayName.setText(xmlConf.getUserID());
         chkNat.setSelected(xmlConf.isNat());
+        chkLang.setSelected(xmlConf.isRussian());
 
     }
 
-    private void updateConfFile(XmlConfigFile xmlConf){
+    private void updateConfFile(XmlConfigFile xmlConf) {
         xmlConf.setMac(txtMac.getText());
         xmlConf.setUserID(txtUserId.getText());
         xmlConf.setUserPass(txtPassword.getText());
@@ -282,12 +332,14 @@ public class Controller {
         xmlConf.setPhoneLabel(txtPhoneLabel.getText());
         xmlConf.setSipPort(txtSipPort.getText());
         xmlConf.setSipmPort(txtSipmPort.getText());
-        xmlConf.setDisplayName(txtDisplayName.getText());
+//        xmlConf.setDisplayName(txtDisplayName.getText());
         xmlConf.setNat(chkNat.isSelected());
+        xmlConf.setRussian(chkLang.isSelected());
+
 
     }
 
-    private void clearTextFields(){
+    private void clearTextFields() {
 
         txtMac.setText("");
         txtCurrentPhoneType.setText("");
@@ -300,37 +352,47 @@ public class Controller {
         txtSipmPort.setText("");
         txtDisplayName.setText("");
         chkNat.setSelected(false);
+        chkLang.setSelected(false);
 
     }
 
     public void chkNewPhoneTypeOnAction(ActionEvent actionEvent) {
-        if(chkNewPhoneType.isSelected()){
+        if (chkNewPhoneType.isSelected()) {
             cmbNewPhoneType.setDisable(false);
-        }else{
+        } else {
             cmbNewPhoneType.setDisable(true);
         }
     }
 
     public void btnDeleteConfigOnAction(ActionEvent actionEvent) {
 
-        String cmbPhoneNumberStr = (String)this.cmbPhoneNumber.getValue();
-        for(XmlConfigFile xmlConf : fileConfigList){
-            if(cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getDisplayName()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getMac())){
+        String cmbPhoneNumberStr = (String) this.cmbPhoneNumber.getValue();
+        for (XmlConfigFile xmlConf : fileConfigList) {
+            if (cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
+                    cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) &&
+                    cmbPhoneNumberStr.contains(xmlConf.getMac())) {
 
-                currentSelectedConfig.getFileName().delete();
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+                alert.setTitle("Attention!");
+                alert.setHeaderText("Confirmation Dialog");
+                alert.setContentText("Are you sure you want to delete config: " + xmlConf.getFileName().getName() + " ?");
+
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK) {
+                    currentSelectedConfig.getFileName().delete();
+                } else {
+                    return;
+                }
+
 
                 break;
             }
         }
 
-
-        fileConfigList = FXCollections.observableArrayList();
         initExistedConfigs();
         clearTextFields();
-
-
     }
 
     public void btnOpenConfigOnAction(ActionEvent actionEvent) {
@@ -341,8 +403,40 @@ public class Controller {
             } else if (currentSelectedConfig != null) {
                 Runtime.getRuntime().exec("notepad++ " + currentSelectedConfig.getFileName().getAbsolutePath());
             }
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
+    }
+
+    public void txtMacOnKeyTyped(KeyEvent keyEvent) {
+
+    }
+
+    public void txtMacOnKeyReleased(KeyEvent keyEvent) {
+
+        String line = this.txtMac.getText();
+        boolean isCorrect = checkMacField(line);
+
+        if (isCorrect) {
+            this.txtMac.setStyle("-fx-border-color: lawngreen");
+        } else {
+            this.txtMac.setStyle("-fx-border-color: red");
+        }
+
+    }
+
+    private boolean checkMacField(String line) {
+
+        if (line.length() != 12) {
+            return false;
+        }
+
+        Pattern p = Pattern.compile("[A-F0-9]+");
+        if (p.matcher(line).matches()) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 }

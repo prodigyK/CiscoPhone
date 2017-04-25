@@ -90,7 +90,7 @@
                   <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
                </GridPane.margin>
             </Label>
-            <TextField fx:id="txtMac" promptText="MAC address" GridPane.rowIndex="1">
+            <TextField fx:id="txtMac" onKeyReleased="#txtMacOnKeyReleased" onKeyTyped="#txtMacOnKeyTyped" promptText="MAC address" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
@@ -125,7 +125,7 @@
                   <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
                </GridPane.margin>
             </Label>
-            <Label text="Phone Label:" GridPane.rowIndex="6">
+            <Label text="Username:" GridPane.rowIndex="6">
                <GridPane.margin>
                   <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
                </GridPane.margin>
@@ -140,7 +140,7 @@
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
             </TextField>
-            <TextField fx:id="txtPhoneLabel" promptText="CISCO" GridPane.rowIndex="7">
+            <TextField fx:id="txtPhoneLabel" promptText="name" GridPane.rowIndex="7">
                <GridPane.margin>
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
@@ -165,12 +165,12 @@
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
             </TextField>
-            <Label text="Display Name:" GridPane.rowIndex="10">
+            <Label text="Phone:" GridPane.rowIndex="10">
                <GridPane.margin>
                   <Insets bottom="10.0" left="20.0" right="20.0" top="20.0" />
                </GridPane.margin>
             </Label>
-            <TextField fx:id="txtDisplayName" promptText="username" GridPane.rowIndex="11">
+            <TextField fx:id="txtDisplayName" disable="true" GridPane.rowIndex="11">
                <GridPane.margin>
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
@@ -200,6 +200,11 @@
                   <Insets bottom="20.0" left="20.0" right="40.0" top="20.0" />
                </GridPane.margin>
             </TextField>
+            <CheckBox fx:id="chkLang" mnemonicParsing="false" text="Russian" GridPane.rowIndex="12">
+               <GridPane.margin>
+                  <Insets left="100.0" />
+               </GridPane.margin>
+            </CheckBox>
          </children>
       </GridPane>
       <Separator minWidth="610.0" prefWidth="200.0">

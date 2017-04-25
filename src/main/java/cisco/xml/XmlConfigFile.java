@@ -14,6 +14,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class XmlConfigFile {
@@ -21,7 +24,7 @@ public class XmlConfigFile {
 
     private File fileName;
     private String phoneType;
-    private String mac;
+    private String mac = "";
     private String userID;
     private String userPass;
     private String serverAddress;
@@ -31,6 +34,8 @@ public class XmlConfigFile {
     private String sipmPort;
     private String displayName;
     private boolean nat;
+    private boolean isRussian;
+    private static final Map<String, String> phoneModels;
 
     static {
         Properties property = new Properties();
@@ -44,6 +49,11 @@ public class XmlConfigFile {
             System.err.println("Error: a problem occured while reading property file");
         }
 
+        Map<String, String> map = new HashMap<>();
+        map.put("SIP69xx.9-4-1-3SR3", "6941");
+        map.put("term11.default", "7911");
+        map.put("SIP45.8-5-4S", "7965");
+        phoneModels = Collections.unmodifiableMap(map);
     }
 
     public XmlConfigFile(File fileName) {
@@ -51,20 +61,20 @@ public class XmlConfigFile {
         init();
     }
 
-    private void init(){
+    private void init() {
 
-        if(!this.fileName.exists()){
+        if (!this.fileName.exists()) {
             return;
         }
 
-        try{
+        try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(this.fileName);
 
             NodeList loadInformation = doc.getElementsByTagName("loadInformation");
             Element el = (Element) loadInformation.item(0);
-            this.phoneType = el.getTextContent();
+            this.phoneType = phoneModels.get(el.getTextContent());
 
             NodeList authName = doc.getElementsByTagName("authName");
             el = (Element) authName.item(0);
@@ -102,23 +112,34 @@ public class XmlConfigFile {
             el = (Element) displayName.item(0);
             this.displayName = el.getTextContent();
 
-            if(this.fileName.getName().startsWith("SEP")){
-                this.mac = this.fileName.getName().substring(3,15);
+            NodeList lang = doc.getElementsByTagName("userLocale");
+            el = (Element) lang.item(0);
+            if (el != null) {
+                this.isRussian = "".equals(el.getElementsByTagName("name").item(0).getTextContent());
+            } else {
+                this.isRussian = false;
             }
 
-        }catch(Exception e){
-            System.out.println(e.getMessage());
+            if (this.fileName.getName().startsWith("SEP")) {
+                this.mac = this.fileName.getName().substring(3, 15);
+            }
+
+        } catch (Exception e) {
+            System.out.println("--------------------------------------");
+            for (StackTraceElement element : e.getStackTrace()) {
+                System.out.println(element.toString());
+            }
         }
 
     }
 
-    public void updateConfig(boolean isNewFile){
+    public void updateConfig(boolean isNewFile) {
 
-        if(!this.fileName.exists()){
+        if (!this.fileName.exists()) {
             return;
         }
 
-        try{
+        try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(this.fileName);
@@ -131,6 +152,7 @@ public class XmlConfigFile {
             Element el = (Element) line.item(0);
             el.getElementsByTagName("name").item(0).setTextContent(this.userID);
             el.getElementsByTagName("featureLabel").item(0).setTextContent(this.userID);
+            el.getElementsByTagName("contact").item(0).setTextContent(this.userID);
 
             NodeList authPassword = doc.getElementsByTagName("authPassword");
             node = authPassword.item(0);
@@ -166,7 +188,36 @@ public class XmlConfigFile {
 
             NodeList displayName = doc.getElementsByTagName("displayName");
             node = displayName.item(0);
-            node.setTextContent(this.displayName);
+            node.setTextContent(this.userID);
+
+            NodeList userLocale = doc.getElementsByTagName("userLocale");
+            el = (Element) userLocale.item(0);
+            if (isRussian) {
+                el.getElementsByTagName("name").item(0).setTextContent("");
+                el.getElementsByTagName("langCode").item(0).setTextContent("");
+                el.getElementsByTagName("winCharSet").item(0).setTextContent("");
+            } else {
+                el.getElementsByTagName("name").item(0).setTextContent("Russian_Russia");
+                el.getElementsByTagName("langCode").item(0).setTextContent("ru_RU");
+                el.getElementsByTagName("winCharSet").item(0).setTextContent("utf");
+            }
+
+            NodeList networkLocale = doc.getElementsByTagName("networkLocale");
+            node = networkLocale.item(0);
+            if (isRussian) {
+                node.setTextContent("");
+            } else {
+                node.setTextContent("Russian_Federation");
+            }
+
+            NodeList networkLocaleInfo = doc.getElementsByTagName("networkLocaleInfo");
+            el = (Element) networkLocaleInfo.item(0);
+            if (isRussian) {
+                el.getElementsByTagName("name").item(0).setTextContent("");
+            } else {
+                el.getElementsByTagName("name").item(0).setTextContent("Russian_Federation");
+            }
+
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer;
@@ -175,7 +226,7 @@ public class XmlConfigFile {
             StreamResult result = new StreamResult(isNewFile ? new File(PATH + "SEP" + this.mac.toUpperCase() + ".cnf.xml") : this.fileName);
             transformer.transform(source, result);
 
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e.getStackTrace());
         }
 
@@ -279,5 +330,17 @@ public class XmlConfigFile {
 
     public void setNat(boolean nat) {
         this.nat = nat;
+    }
+
+    public boolean isRussian() {
+        return isRussian;
+    }
+
+    public void setRussian(boolean russian) {
+        isRussian = russian;
+    }
+
+    public static Map<String, String> getPhoneModels() {
+        return phoneModels;
     }
 }
