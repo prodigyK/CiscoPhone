@@ -82,17 +82,12 @@ public class XmlSpeedDialConfigFile extends XmlConfigFile {
 
     public XmlSpeedDialConfigFile(File fileName) {
         super(fileName);
-//        loadConfig();
         loadSpeedDialConfig();
     }
 
     public void loadSpeedDialConfig() {
 
         try {
-//            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-//            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-//            doc = dBuilder.parse(getFileName());
-
             NodeList nodeList = doc.getElementsByTagName("line");
 
             if ("2".equals(nodeList.item(1).getAttributes().getNamedItem("button").getNodeValue())) {
@@ -104,6 +99,111 @@ public class XmlSpeedDialConfigFile extends XmlConfigFile {
                 Element el = (Element) nodeList.item(2);
                 setStrNumber3(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
                 setStrUser3(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("4".equals(nodeList.item(3).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(3);
+                setStrNumber4(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser4(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("5".equals(nodeList.item(4).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(4);
+                setStrNumber5(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser5(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("6".equals(nodeList.item(5).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(5);
+                setStrNumber6(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser6(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("7".equals(nodeList.item(6).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(6);
+                setStrNumber7(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser7(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("8".equals(nodeList.item(7).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(7);
+                setStrNumber8(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser8(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("9".equals(nodeList.item(8).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(8);
+                setStrNumber9(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser9(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("10".equals(nodeList.item(9).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(9);
+                setStrNumber10(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser10(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("11".equals(nodeList.item(10).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(10);
+                setStrNumber11(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser11(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("12".equals(nodeList.item(11).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(11);
+                setStrNumber12(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser12(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("13".equals(nodeList.item(12).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(12);
+                setStrNumber13(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser13(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("14".equals(nodeList.item(13).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(12);
+                setStrNumber14(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser14(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("15".equals(nodeList.item(14).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(14);
+                setStrNumber15(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser15(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("16".equals(nodeList.item(15).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(15);
+                setStrNumber16(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser16(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("17".equals(nodeList.item(16).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(16);
+                setStrNumber17(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser17(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("18".equals(nodeList.item(17).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(17);
+                setStrNumber18(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser18(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("19".equals(nodeList.item(18).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(18);
+                setStrNumber19(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser19(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("20".equals(nodeList.item(19).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(19);
+                setStrNumber20(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser20(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("21".equals(nodeList.item(20).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(20);
+                setStrNumber21(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser21(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("22".equals(nodeList.item(21).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(21);
+                setStrNumber22(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser22(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("23".equals(nodeList.item(22).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(22);
+                setStrNumber23(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser23(el.getElementsByTagName("featureLabel").item(0).getTextContent());
+            }
+            if ("24".equals(nodeList.item(23).getAttributes().getNamedItem("button").getNodeValue())) {
+                Element el = (Element) nodeList.item(23);
+                setStrNumber24(el.getElementsByTagName("speedDialNumber").item(0).getTextContent());
+                setStrUser24(el.getElementsByTagName("featureLabel").item(0).getTextContent());
             }
 
         } catch (Exception e) {
@@ -117,15 +217,120 @@ public class XmlSpeedDialConfigFile extends XmlConfigFile {
 
         NodeList nodeList = doc.getElementsByTagName("line");
 
-        if("2".equals(nodeList.item(1).getAttributes().getNamedItem("button").getNodeValue())){
+        if ("2".equals(nodeList.item(1).getAttributes().getNamedItem("button").getNodeValue())) {
             Element el = (Element) nodeList.item(1);
             el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber2);
             el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser2);
         }
-        if("3".equals(nodeList.item(2).getAttributes().getNamedItem("button").getNodeValue())){
+        if ("3".equals(nodeList.item(2).getAttributes().getNamedItem("button").getNodeValue())) {
             Element el = (Element) nodeList.item(2);
             el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber3);
             el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser3);
+        }
+        if ("4".equals(nodeList.item(3).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(3);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber4);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser4);
+        }
+        if ("5".equals(nodeList.item(4).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(4);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber5);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser5);
+        }
+        if ("6".equals(nodeList.item(5).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(5);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber6);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser6);
+        }
+        if ("7".equals(nodeList.item(6).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(6);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber7);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser7);
+        }
+        if ("8".equals(nodeList.item(7).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(7);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber8);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser8);
+        }
+        if ("9".equals(nodeList.item(8).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(8);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber9);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser9);
+        }
+        if ("10".equals(nodeList.item(9).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(9);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber10);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser10);
+        }
+        if ("11".equals(nodeList.item(10).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(10);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber11);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser11);
+        }
+        if ("12".equals(nodeList.item(11).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(11);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber12);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser12);
+        }
+        if ("13".equals(nodeList.item(12).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(12);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber13);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser13);
+        }
+        if ("14".equals(nodeList.item(13).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(13);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber14);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser14);
+        }
+        if ("15".equals(nodeList.item(14).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(14);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber15);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser15);
+        }
+        if ("16".equals(nodeList.item(15).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(15);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber16);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser16);
+        }
+        if ("17".equals(nodeList.item(16).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(16);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber17);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser17);
+        }
+        if ("18".equals(nodeList.item(17).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(17);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber18);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser18);
+        }
+        if ("19".equals(nodeList.item(18).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(18);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber19);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser19);
+        }
+        if ("20".equals(nodeList.item(19).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(19);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber20);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser20);
+        }
+        if ("21".equals(nodeList.item(20).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(20);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber21);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser21);
+        }
+        if ("22".equals(nodeList.item(21).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(21);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber22);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser22);
+        }
+        if ("23".equals(nodeList.item(22).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(22);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber23);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser23);
+        }
+        if ("24".equals(nodeList.item(23).getAttributes().getNamedItem("button").getNodeValue())) {
+            Element el = (Element) nodeList.item(23);
+            el.getElementsByTagName("speedDialNumber").item(0).setTextContent(this.strNumber24);
+            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.strUser24);
         }
 
 

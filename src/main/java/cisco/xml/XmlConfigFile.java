@@ -30,12 +30,18 @@ public class XmlConfigFile {
     private String serverAddress;
     private String ntpAddress;
     private String phoneLabel;
+    private String featureLabel;
     private String sipPort;
     private String sipmPort;
     private String displayName;
     private boolean nat;
     private boolean isRussian;
     private static final Map<String, String> phoneModels;
+
+    private DocumentBuilderFactory dbFactory;
+    private DocumentBuilder dBuilder;
+    protected Document doc;
+
 
     static {
         Properties property = new Properties();
@@ -52,12 +58,23 @@ public class XmlConfigFile {
         Map<String, String> map = new HashMap<>();
         map.put("SIP69xx.9-4-1-3SR3", "6941");
         map.put("term11.default", "7911");
+        map.put("term31.default", "7931");
         map.put("SIP45.8-5-4S", "7965");
+
         phoneModels = Collections.unmodifiableMap(map);
     }
 
     public XmlConfigFile(File fileName) {
         this.fileName = fileName;
+
+        try {
+            dbFactory = DocumentBuilderFactory.newInstance();
+            dBuilder = dbFactory.newDocumentBuilder();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
         init();
     }
 
@@ -68,9 +85,7 @@ public class XmlConfigFile {
         }
 
         try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(this.fileName);
+            doc = dBuilder.parse(getFileName());
 
             NodeList loadInformation = doc.getElementsByTagName("loadInformation");
             Element el = (Element) loadInformation.item(0);
@@ -95,6 +110,10 @@ public class XmlConfigFile {
             NodeList phoneLabel = doc.getElementsByTagName("phoneLabel");
             el = (Element) phoneLabel.item(0);
             this.phoneLabel = el.getTextContent();
+
+            NodeList featureLabel = doc.getElementsByTagName("featureLabel");
+            el = (Element) featureLabel.item(0);
+            this.featureLabel = el.getTextContent();
 
             NodeList sipPort = doc.getElementsByTagName("sipPort");
             el = (Element) sipPort.item(0);
@@ -126,9 +145,8 @@ public class XmlConfigFile {
 
         } catch (Exception e) {
             System.out.println("--------------------------------------");
-            for (StackTraceElement element : e.getStackTrace()) {
-                System.out.println(element.toString());
-            }
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
 
     }
@@ -140,9 +158,6 @@ public class XmlConfigFile {
         }
 
         try {
-            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(this.fileName);
 
             NodeList authName = doc.getElementsByTagName("authName");
             Node node = authName.item(0);
@@ -151,7 +166,14 @@ public class XmlConfigFile {
             NodeList line = doc.getElementsByTagName("line");
             Element el = (Element) line.item(0);
             el.getElementsByTagName("name").item(0).setTextContent(this.userID);
-            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.userID);
+
+            if ("6941".equals(getPhoneType())) {
+                el.getElementsByTagName("featureLabel").item(0).setTextContent(getPhoneLabel());
+            } else {
+                el.getElementsByTagName("featureLabel").item(0).setTextContent(getUserID());
+            }
+
+//            el.getElementsByTagName("featureLabel").item(0).setTextContent(this.userID);
             el.getElementsByTagName("contact").item(0).setTextContent(this.userID);
 
             NodeList authPassword = doc.getElementsByTagName("authPassword");
@@ -172,7 +194,15 @@ public class XmlConfigFile {
 
             NodeList phoneLabel = doc.getElementsByTagName("phoneLabel");
             node = phoneLabel.item(0);
-            node.setTextContent(this.phoneLabel);
+            node.setTextContent(getPhoneLabel());
+
+//            NodeList featureLabel = doc.getElementsByTagName("featureLabel");
+//            node = featureLabel.item(0);
+//            if("6941".equals(getPhoneType())){
+//                node.setTextContent(getPhoneLabel());
+//            }else{
+//                node.setTextContent(this.userID);
+//            }
 
             NodeList sipPort = doc.getElementsByTagName("sipPort");
             node = sipPort.item(0);
@@ -190,32 +220,38 @@ public class XmlConfigFile {
             node = displayName.item(0);
             node.setTextContent(this.userID);
 
-            NodeList userLocale = doc.getElementsByTagName("userLocale");
-            el = (Element) userLocale.item(0);
-            if (isRussian) {
-                el.getElementsByTagName("name").item(0).setTextContent("");
-                el.getElementsByTagName("langCode").item(0).setTextContent("");
-                el.getElementsByTagName("winCharSet").item(0).setTextContent("");
-            } else {
-                el.getElementsByTagName("name").item(0).setTextContent("Russian_Russia");
-                el.getElementsByTagName("langCode").item(0).setTextContent("ru_RU");
-                el.getElementsByTagName("winCharSet").item(0).setTextContent("utf");
-            }
+            try {
+                NodeList userLocale = doc.getElementsByTagName("userLocale");
+                el = (Element) userLocale.item(0);
+                if (isRussian) {
+                    el.getElementsByTagName("name").item(0).setTextContent("");
+                    el.getElementsByTagName("langCode").item(0).setTextContent("");
+                    el.getElementsByTagName("winCharSet").item(0).setTextContent("");
+                } else {
+                    el.getElementsByTagName("name").item(0).setTextContent("Russian_Russia");
+                    el.getElementsByTagName("langCode").item(0).setTextContent("ru_RU");
+                    el.getElementsByTagName("winCharSet").item(0).setTextContent("utf");
+                }
 
-            NodeList networkLocale = doc.getElementsByTagName("networkLocale");
-            node = networkLocale.item(0);
-            if (isRussian) {
-                node.setTextContent("");
-            } else {
-                node.setTextContent("Russian_Federation");
-            }
+                NodeList networkLocale = doc.getElementsByTagName("networkLocale");
+                node = networkLocale.item(0);
+                if (isRussian) {
+                    node.setTextContent("");
+                } else {
+                    node.setTextContent("Russian_Federation");
+                }
 
-            NodeList networkLocaleInfo = doc.getElementsByTagName("networkLocaleInfo");
-            el = (Element) networkLocaleInfo.item(0);
-            if (isRussian) {
-                el.getElementsByTagName("name").item(0).setTextContent("");
-            } else {
-                el.getElementsByTagName("name").item(0).setTextContent("Russian_Federation");
+                NodeList networkLocaleInfo = doc.getElementsByTagName("networkLocaleInfo");
+                el = (Element) networkLocaleInfo.item(0);
+                if (isRussian) {
+                    el.getElementsByTagName("name").item(0).setTextContent("");
+                } else {
+                    el.getElementsByTagName("name").item(0).setTextContent("Russian_Federation");
+                }
+
+            } catch (Exception e) {
+                System.out.println("User Locale Exception: " + e.getMessage());
+                e.printStackTrace();
             }
 
 
@@ -227,7 +263,8 @@ public class XmlConfigFile {
             transformer.transform(source, result);
 
         } catch (Exception e) {
-            System.out.println(e.getStackTrace());
+            System.out.println("Exception: " + e.getMessage());
+            e.printStackTrace();
         }
 
     }
@@ -342,5 +379,13 @@ public class XmlConfigFile {
 
     public static Map<String, String> getPhoneModels() {
         return phoneModels;
+    }
+
+    public String getFeatureLabel() {
+        return featureLabel;
+    }
+
+    public void setFeatureLabel(String featureLabel) {
+        this.featureLabel = featureLabel;
     }
 }

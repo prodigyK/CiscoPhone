@@ -1,16 +1,23 @@
 package cisco.controller;
 
 import cisco.xml.XmlConfigFile;
+import cisco.xml.XmlSpeedDialConfigFile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -26,8 +33,8 @@ import java.util.regex.Pattern;
 
 public class Controller {
 
-    private ObservableList<String> phoneTypeList = FXCollections.observableArrayList();
-    //    private ObservableList<XmlConfigFile> defaultFileConfigList = FXCollections.observableArrayList();
+//    private ObservableList<String> phoneTypeList = FXCollections.observableArrayList();
+
     private ObservableList<XmlConfigFile> fileConfigList = FXCollections.observableArrayList();
     private Map<String, XmlConfigFile> defaultConfigList = new TreeMap<>();
 
@@ -94,8 +101,14 @@ public class Controller {
     @FXML
     private CheckBox chkNewPhoneType;
 
+    private Parent fxmlEdit;
+    private FXMLLoader fxmlLoader = new FXMLLoader();
+    private SpeedDialController speedDialController;
+    private Stage speedDialStage;
+
     @FXML
     private void initialize() {
+
         initDefaultConfigs();
         initExistedConfigs();
 
@@ -104,6 +117,18 @@ public class Controller {
         txtMac.textProperty().addListener((ov, oldValue, newValue) -> {
             txtMac.setText(newValue.toUpperCase());
         });
+
+        try {
+
+            fxmlLoader.setLocation(getClass().getResource("/fxml/extends.fxml"));
+            fxmlEdit = fxmlLoader.load();
+            speedDialController = fxmlLoader.getController();
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     private void initDefaultConfigs() {
@@ -125,9 +150,15 @@ public class Controller {
                 try {
                     String[] parts = file.getName().split("_");
                     String[] parts_2 = parts[1].split("\\.");
+
                     XmlConfigFile xml = new XmlConfigFile(file);
                     xml.setPhoneType(parts_2[0]);
-                    defaultConfigList.put(parts_2[0], xml);
+
+                    if ("7931".equals(parts_2[0])) {
+                        defaultConfigList.put(parts_2[0], new XmlSpeedDialConfigFile(file));
+                    } else {
+                        defaultConfigList.put(parts_2[0], xml);
+                    }
 
 //                    defaultFileConfigList.add(new XmlConfigFile(file));
                 } catch (Exception e) {
@@ -139,6 +170,7 @@ public class Controller {
                 comboDefaultList.add((String) pair.getKey());
             }
 
+//            cmbPhoneType = new ComboBox();
             cmbPhoneType.setItems(FXCollections.observableList(comboDefaultList));
             cmbNewPhoneType.setItems(FXCollections.observableList(comboDefaultList));
 
@@ -167,23 +199,37 @@ public class Controller {
             fileConfigList = FXCollections.observableArrayList();
             for (File file : folder.listFiles(fileFilter)) {
                 try {
-                    fileConfigList.add(new XmlConfigFile(file));
+                    XmlConfigFile xmlConfigFile = new XmlConfigFile(file);
+                    if ("7931".equals(xmlConfigFile.getPhoneType())) {
+                        fileConfigList.add(new XmlSpeedDialConfigFile(file));
+                    } else {
+                        fileConfigList.add(xmlConfigFile);
+                    }
                 } catch (Exception e) {
-                    System.out.println(e.getStackTrace());
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
                 }
             }
             List<String> comboExistedList = new ArrayList<String>();
             for (XmlConfigFile xmlConf : fileConfigList) {
-                comboExistedList.add(xmlConf.getUserID() + " : " + xmlConf.getPhoneLabel() + " : " + xmlConf.getMac());
+                String label;
+                if ("6941".equals(xmlConf.getPhoneType())) {
+                    label = xmlConf.getFeatureLabel();
+                } else {
+                    label = xmlConf.getPhoneLabel();
+                }
+                comboExistedList.add(xmlConf.getUserID() + " : " + label + " : " + xmlConf.getMac());
             }
 
             Collections.sort(comboExistedList);
 
+//            cmbPhoneNumber = new ComboBox();
             cmbPhoneNumber.setItems(FXCollections.observableList(comboExistedList));
 
 
         } catch (Exception e) {
-
+            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
 
     }
@@ -216,11 +262,19 @@ public class Controller {
 
             } else {
                 updateConfFile(currentSelectedConfig);
-                currentSelectedConfig.updateConfig(false);
+                if (currentSelectedConfig instanceof XmlSpeedDialConfigFile) {
+                    ((XmlSpeedDialConfigFile) currentSelectedConfig).updateSpeedDialConfig(false);
+                } else {
+                    currentSelectedConfig.updateConfig(false);
+                }
+                initDefaultConfigs();
                 initExistedConfigs();
                 clearTextFields();
             }
             currentSelectedConfig = null;
+            currentDefaultConfig = null;
+            cmbPhoneType.setValue("select default config");
+            cmbPhoneNumber.setValue("select default config");
 
         } else if (currentDefaultConfig != null) {
 
@@ -243,10 +297,19 @@ public class Controller {
                         Optional<ButtonType> result = alert.showAndWait();
                         if (result.get() == ButtonType.OK) {
                             updateConfFile(currentDefaultConfig);
-                            currentDefaultConfig.updateConfig(true);
+                            if (currentDefaultConfig instanceof XmlSpeedDialConfigFile) {
+                                ((XmlSpeedDialConfigFile) currentDefaultConfig).updateSpeedDialConfig(true);
+                            } else {
+                                currentDefaultConfig.updateConfig(true);
+
+                            }
+                            initDefaultConfigs();
                             initExistedConfigs();
                             clearTextFields();
                             currentDefaultConfig = null;
+                            currentSelectedConfig = null;
+                            cmbPhoneType.setValue("select default config");
+                            cmbPhoneNumber.setValue("select default config");
                         }
 
                         return;
@@ -255,13 +318,22 @@ public class Controller {
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                e.printStackTrace();
             }
 
             updateConfFile(currentDefaultConfig);
-            currentDefaultConfig.updateConfig(true);
+            if (currentDefaultConfig instanceof XmlSpeedDialConfigFile) {
+                ((XmlSpeedDialConfigFile) currentDefaultConfig).updateSpeedDialConfig(true);
+            } else {
+                currentDefaultConfig.updateConfig(true);
+            }
+            initDefaultConfigs();
             initExistedConfigs();
             clearTextFields();
             currentDefaultConfig = null;
+            currentSelectedConfig = null;
+            cmbPhoneType.setValue("select default config");
+            cmbPhoneNumber.setValue("select default config");
 
         } else {
 
@@ -281,7 +353,7 @@ public class Controller {
         currentSelectedConfig = null;
 
         updateTextFields(currentDefaultConfig);
-        cmbPhoneNumber.setPromptText("select existing config");
+        cmbPhoneNumber.setValue("select existing config");
         cmbPhoneNumber.setOpacity(0.5);
         cmbPhoneType.setOpacity(1);
     }
@@ -291,7 +363,8 @@ public class Controller {
         String cmbPhoneNumberStr = (String) this.cmbPhoneNumber.getValue();
         for (XmlConfigFile xmlConf : fileConfigList) {
             if (cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) &&
+                    (cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) ||
+                            cmbPhoneNumberStr.contains(xmlConf.getFeatureLabel())) &&
                     cmbPhoneNumberStr.contains(xmlConf.getMac())) {
                 currentDefaultConfig = null;
                 currentSelectedConfig = xmlConf;
@@ -301,7 +374,7 @@ public class Controller {
         }
 
         updateTextFields(currentSelectedConfig);
-        cmbPhoneType.setPromptText("select default config");
+        cmbPhoneType.setValue("select default config");
         cmbPhoneType.setOpacity(0.5);
         cmbPhoneNumber.setOpacity(1);
     }
@@ -314,7 +387,13 @@ public class Controller {
         txtPassword.setText(xmlConf.getUserPass());
         txtServerAddress.setText(xmlConf.getServerAddress());
         txtNtpAddress.setText(xmlConf.getNtpAddress());
-        txtPhoneLabel.setText(xmlConf.getPhoneLabel());
+
+        if ("6941".equals(xmlConf.getPhoneType())) {
+            txtPhoneLabel.setText(xmlConf.getFeatureLabel());
+        } else {
+            txtPhoneLabel.setText(xmlConf.getPhoneLabel());
+        }
+
         txtSipPort.setText(xmlConf.getSipPort());
         txtSipmPort.setText(xmlConf.getSipmPort());
         txtDisplayName.setText(xmlConf.getUserID());
@@ -330,6 +409,13 @@ public class Controller {
         xmlConf.setServerAddress(txtServerAddress.getText());
         xmlConf.setNtpAddress(txtNtpAddress.getText());
         xmlConf.setPhoneLabel(txtPhoneLabel.getText());
+
+        if ("6941".equals(xmlConf.getPhoneType())) {
+            xmlConf.setFeatureLabel(txtPhoneLabel.getText());
+        } else {
+            xmlConf.setFeatureLabel(txtUserId.getText());
+        }
+        xmlConf.setFeatureLabel(txtPhoneLabel.getText());
         xmlConf.setSipPort(txtSipPort.getText());
         xmlConf.setSipmPort(txtSipmPort.getText());
 //        xmlConf.setDisplayName(txtDisplayName.getText());
@@ -369,7 +455,8 @@ public class Controller {
         String cmbPhoneNumberStr = (String) this.cmbPhoneNumber.getValue();
         for (XmlConfigFile xmlConf : fileConfigList) {
             if (cmbPhoneNumberStr.contains(xmlConf.getUserID()) &&
-                    cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) &&
+                    (cmbPhoneNumberStr.contains(xmlConf.getPhoneLabel()) ||
+                            cmbPhoneNumberStr.contains(xmlConf.getFeatureLabel())) &&
                     cmbPhoneNumberStr.contains(xmlConf.getMac())) {
 
 
@@ -437,6 +524,35 @@ public class Controller {
         } else {
             return false;
         }
+
+    }
+
+    public void btnSpeedDialOnAction(ActionEvent actionEvent) {
+
+//        if(!(currentSelectedConfig instanceof XmlSpeedDialConfigFile) ||
+//                !(currentDefaultConfig instanceof XmlSpeedDialConfigFile)){
+//            return;
+//        }
+        Window parentWindow = ((Node) actionEvent.getSource()).getScene().getWindow();
+
+        if (speedDialStage == null) {
+            speedDialStage = new Stage();
+            speedDialStage.setTitle("Speed Dial");
+            speedDialStage.setResizable(false);
+            speedDialStage.setScene(new Scene(fxmlEdit));
+            speedDialStage.initModality(Modality.WINDOW_MODAL);
+            speedDialStage.initOwner(parentWindow);
+        }
+
+        if (currentDefaultConfig != null && currentDefaultConfig instanceof XmlSpeedDialConfigFile) {
+            speedDialController.setXmlSpeedDialConfigFile((XmlSpeedDialConfigFile) currentDefaultConfig);
+        } else if (currentSelectedConfig != null && currentSelectedConfig instanceof XmlSpeedDialConfigFile) {
+            speedDialController.setXmlSpeedDialConfigFile((XmlSpeedDialConfigFile) currentSelectedConfig);
+        } else {
+            return;
+        }
+        speedDialController.updateTextFields();
+        speedDialStage.show();
 
     }
 }
