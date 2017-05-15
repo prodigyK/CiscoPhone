@@ -11,7 +11,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
-        primaryStage.setTitle("Cisco Update Config (version 1.0)");
+        primaryStage.setTitle("Cisco Update Config (Version 2.2)");
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.setMinWidth(670);
         primaryStage.setMinHeight(570);

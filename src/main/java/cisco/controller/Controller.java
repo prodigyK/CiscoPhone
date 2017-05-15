@@ -1,5 +1,6 @@
 package cisco.controller;
 
+import cisco.xml.XmlConfig;
 import cisco.xml.XmlConfigFile;
 import cisco.xml.XmlSpeedDialConfigFile;
 import javafx.collections.FXCollections;
@@ -12,6 +13,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
@@ -224,6 +226,7 @@ public class Controller {
             Collections.sort(comboExistedList);
 
 //            cmbPhoneNumber = new ComboBox();
+            cmbPhoneNumber.setVisibleRowCount(18);
             cmbPhoneNumber.setItems(FXCollections.observableList(comboExistedList));
 
 
@@ -553,6 +556,41 @@ public class Controller {
         }
         speedDialController.updateTextFields();
         speedDialStage.show();
+
+    }
+
+    public void txtMacOnKeyPressed(KeyEvent keyEvent) {
+
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+
+            String mac = txtMac.getText();
+            String number = "";
+            String name = "";
+            boolean isExists = false;
+
+            for (XmlConfigFile xmlFile : fileConfigList) {
+                if (mac.equals(xmlFile.getMac())) {
+                    number = xmlFile.getUserID();
+                    name = xmlFile.getPhoneLabel();
+                    isExists = true;
+                }
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Information!");
+            alert.setHeaderText("Information Dialog");
+
+            if (isExists) {
+                Formatter format = new Formatter();
+                format.format("Number: %s, Name: %s", number, name);
+                alert.setContentText(format.toString());
+
+            } else {
+                alert.setContentText("It doesn't exist config with such MAC: " + mac);
+            }
+            alert.showAndWait();
+
+        }
 
     }
 }
